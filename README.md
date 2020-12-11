@@ -22,6 +22,8 @@ You can safely ignore the `This app isn't verified` error.
 
 ## Force build
 
+By default build is **off** to speed things up.
+
 ```
 BUILD=1 ./run
 ```

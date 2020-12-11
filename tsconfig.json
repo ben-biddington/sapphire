@@ -7,6 +7,8 @@
       "lib": ["es6"],
       "moduleResolution": "node",
       "rootDir": ".",
+      "incremental": true,
+      "tsBuildInfoFile": "./buildcache/front-end",
       "strict": true,
       "forceConsistentCasingInFileNames": true,
       "noImplicitReturns": true,
