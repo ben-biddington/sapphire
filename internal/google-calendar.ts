@@ -43,6 +43,31 @@ export async function listEvents(opts: any = {}) : Promise<Array<any>> {
     });
 }
 
+export async function listEventsByDateRange(opts: Options) : Promise<Array<any>> {
+    const calendar = await connect();
+
+    const dateRange: DateRange = opts.dateRange || new DateRange(new Date());
+
+    console.log(`from: <${dateRange.from}> to <${dateRange.to}>`);
+
+    return new Promise((accept, reject) => {
+        calendar.events.list({
+            calendarId:     opts.calendarId,
+            timeMin:        dateRange.from.toISOString(),
+            timeMax:        dateRange.to?.toISOString(),
+            maxResults:     10,
+            singleEvents:   true, // Whether to expand recurring events into instances and only return single one-off events and instances of recurring events, but not the underlying recurring events themselves. Optional. The default is False.
+            orderBy:        'startTime',
+        }, 
+        (err: any, res: any) => {
+            if (err) 
+                reject(err);
+            else
+                accept(res.data.items);
+        });
+    });
+}
+
 export async function singleEvent(opts: any = {}) : Promise<Array<any>> {
     const { calendarId, eventId } = opts;
     const calendar = await connect();
@@ -84,3 +109,29 @@ const client = async () : Promise<OAuth2Client> => {
       credential, 
       { tokenPath: '.conf/token.json', scopes: ['https://www.googleapis.com/auth/calendar.readonly'] });
   }
+
+export class DateRange {
+    private _from: Date;
+    private _to: Date | null;
+
+    get from(): Date { return this._from; }
+    get to(): Date | null { return this._to; }
+
+    constructor(from: Date, to?: Date) {
+        this._from = from;
+        this._to = to || null;
+    }
+
+    plusDays(n: number) : DateRange {
+        const toDate = new Date(this._from.getTime());
+        
+        toDate.setDate(toDate.getDate() + n);
+        
+        return new DateRange(this._from, toDate);
+    }
+}
+
+export class Options {
+    public calendarId: string = '';
+    public dateRange?: DateRange;
+}
