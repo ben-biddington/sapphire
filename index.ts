@@ -1,7 +1,5 @@
 
-import * as fs          from 'fs'
 import { listEvents, summary, singleEvent, listCalendars } from './internal/google-calendar'
-import { authorize }    from './internal/google-auth'
 import { Command }      from 'commander'
 //import * as chalk                 from 'chalk'
 
@@ -12,51 +10,25 @@ program.
   command("info [calendarId]").
   option("-v --verbose", "Enable verbose logging").
   action(async (calendarId, cmd) => {
-    console.log(`Querying for calendar <${calendarId}>`);
-
-    const credential = JSON.parse(fs.readFileSync('.conf/credentials.json').toString());
-
-    const token = await authorize(
-        credential, 
-        { tokenPath: '.conf/token.json', scopes: ['https://www.googleapis.com/auth/calendar.readonly'] }); 
-
-    return listEvents(token, {id: calendarId}).then(console.log);
+    return listEvents({id: calendarId}).then(console.log);
   });
 
 program.
   command("summary [calendarId]").
   option("-v --verbose", "Enable verbose logging").
   action(async (calendarId, cmd) => {
-    console.log(`Querying for calendar <${calendarId}>`);
-
-    const credential = JSON.parse(fs.readFileSync('.conf/credentials.json').toString());
-
-    const token = await authorize(
-        credential, 
-        { tokenPath: '.conf/token.json', scopes: ['https://www.googleapis.com/auth/calendar.readonly'] }); 
-
-    return summary(token, {id: calendarId}).then(console.log);
+    return summary({id: calendarId}).then(console.log);
   });
 
 program.
   command("event [calendarId] [eventId]").
   option("-v --verbose", "Enable verbose logging").
   action(async (calendarId, eventId, cmd) => {
-    console.log(`Querying for calendar <${calendarId}>`);
-
-    return singleEvent(await client(), { calendarId, eventId }).then(console.log);
+    return singleEvent({ calendarId, eventId }).then(console.log);
   });
 
 program.
   command("calendars").
-  action(async () => listCalendars(await client()).then(console.log));
-
-const client = async () => {
-  const credential = JSON.parse(fs.readFileSync('.conf/credentials.json').toString());
-
-  return await authorize(
-    credential, 
-    { tokenPath: '.conf/token.json', scopes: ['https://www.googleapis.com/auth/calendar.readonly'] });
-}
+  action(async () => listCalendars().then(console.log));
 
 program.parse(process.argv);

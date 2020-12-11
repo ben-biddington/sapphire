@@ -1,7 +1,10 @@
-import { google } from 'googleapis';
+import { google }       from 'googleapis';
+import { OAuth2Client } from 'google-auth-library';
+import { authorize }    from './google-auth'
+import * as fs          from 'fs'
 
-export async function summary(auth: any, opts: any = {}) {
-    const events = await listEvents(auth, opts);
+export async function summary(opts: any = {}) {
+    const events = await listEvents(opts);
 
     // [i] https://developers.google.com/calendar/v3/reference/events
     return events.map((event:any) => ({
@@ -18,9 +21,9 @@ export async function summary(auth: any, opts: any = {}) {
 
 // https://developers.google.com/calendar/quickstart/nodejs
 // https://developers.google.com/calendar/v3/reference/events/list
-export function listEvents(auth: any, opts: any = {}) : Promise<Array<any>> {
+export async function listEvents(opts: any = {}) : Promise<Array<any>> {
     const { id, limit = 10 } = opts;
-    const calendar = google.calendar({version: 'v3', auth});
+    const calendar = await connect();
 
     return new Promise((accept, reject) => {
         calendar.events.list({
@@ -39,9 +42,9 @@ export function listEvents(auth: any, opts: any = {}) : Promise<Array<any>> {
     });
 }
 
-export function singleEvent(auth: any, opts: any = {}) : Promise<Array<any>> {
+export async function singleEvent(opts: any = {}) : Promise<Array<any>> {
     const { calendarId, eventId } = opts;
-    const calendar = google.calendar({version: 'v3', auth});
+    const calendar = await connect();
 
     return new Promise((accept, reject) => {
         calendar.events.get({
@@ -57,9 +60,9 @@ export function singleEvent(auth: any, opts: any = {}) : Promise<Array<any>> {
     });
 }
 
-export function listCalendars(auth: any) : Promise<Array<any>> {
-    const calendar = google.calendar({version: 'v3', auth});
-
+export async function listCalendars() : Promise<Array<any>> {
+    const calendar = await connect();
+    
     return new Promise((accept, reject) => {
         calendar.calendarList.list({}, 
         (err: any, res: any) => {
@@ -70,3 +73,13 @@ export function listCalendars(auth: any) : Promise<Array<any>> {
         });
     });
 }
+
+const connect = async () => google.calendar({version: 'v3', auth: await client()});
+
+const client = async () : Promise<OAuth2Client> => {
+    const credential = JSON.parse(fs.readFileSync('.conf/credentials.json').toString());
+  
+    return await authorize(
+      credential, 
+      { tokenPath: '.conf/token.json', scopes: ['https://www.googleapis.com/auth/calendar.readonly'] });
+  }
