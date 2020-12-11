@@ -17,6 +17,7 @@ export async function summary(auth: any, opts: any = {}) {
 }
 
 // https://developers.google.com/calendar/quickstart/nodejs
+// https://developers.google.com/calendar/v3/reference/events/list
 export function listEvents(auth: any, opts: any = {}) : Promise<Array<any>> {
     const { id, limit = 10 } = opts;
     const calendar = google.calendar({version: 'v3', auth});
@@ -52,6 +53,20 @@ export function singleEvent(auth: any, opts: any = {}) : Promise<Array<any>> {
                 reject(err);
             else
                 accept(res.data);
+        });
+    });
+}
+
+export function listCalendars(auth: any) : Promise<Array<any>> {
+    const calendar = google.calendar({version: 'v3', auth});
+
+    return new Promise((accept, reject) => {
+        calendar.calendarList.list({}, 
+        (err: any, res: any) => {
+            if (err) 
+                reject(err);
+            else
+                accept(res.data.items);
         });
     });
 }

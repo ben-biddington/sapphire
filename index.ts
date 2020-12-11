@@ -1,6 +1,6 @@
 
 import * as fs          from 'fs'
-import { listEvents, summary, singleEvent }   from './internal/google-calendar'
+import { listEvents, summary, singleEvent, listCalendars } from './internal/google-calendar'
 import { authorize }    from './internal/google-auth'
 import { Command }      from 'commander'
 //import * as chalk                 from 'chalk'
@@ -44,13 +44,19 @@ program.
   action(async (calendarId, eventId, cmd) => {
     console.log(`Querying for calendar <${calendarId}>`);
 
-    const credential = JSON.parse(fs.readFileSync('.conf/credentials.json').toString());
-
-    const token = await authorize(
-        credential, 
-        { tokenPath: '.conf/token.json', scopes: ['https://www.googleapis.com/auth/calendar.readonly'] }); 
-
-    return singleEvent(token, { calendarId, eventId }).then(console.log);
+    return singleEvent(await client(), { calendarId, eventId }).then(console.log);
   });
+
+program.
+  command("calendars").
+  action(async () => listCalendars(await client()).then(console.log));
+
+const client = async () => {
+  const credential = JSON.parse(fs.readFileSync('.conf/credentials.json').toString());
+
+  return await authorize(
+    credential, 
+    { tokenPath: '.conf/token.json', scopes: ['https://www.googleapis.com/auth/calendar.readonly'] });
+}
 
 program.parse(process.argv);
