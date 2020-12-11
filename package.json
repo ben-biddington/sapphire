@@ -1,0 +1,23 @@
+{
+  "name": "sapphire",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/gapi": "0.0.39",
+    "@types/gapi.auth2": "0.0.52",
+    "chalk": "^4.1.0",
+    "commander": "^6.2.0",
+    "gapi": "0.0.3",
+    "googleapis": "^39.2.0",
+    "typescript": "^4.1.2"
+  },
+  "devDependencies": {
+    "@types/node": "^14.14.12"
+  }
+}
