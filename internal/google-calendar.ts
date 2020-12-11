@@ -13,9 +13,10 @@ export async function summary(opts: any = {}) {
         organizer: event.organizer.email,
         colorId: event.colorId,
         date: {
-            start: event.start.dateTime,
-            end: event.end.dateTime,
-        }
+            start: event.start.dateTime || event.start.date,
+            end: event.end.dateTime || event.end.date,
+        },
+        description: event.description
     }));
 }
 
@@ -30,7 +31,7 @@ export async function listEvents(opts: any = {}) : Promise<Array<any>> {
             calendarId:     id,
             timeMin:        (new Date()).toISOString(),
             maxResults:     limit,
-            singleEvents:   true,
+            singleEvents:   true, // Whether to expand recurring events into instances and only return single one-off events and instances of recurring events, but not the underlying recurring events themselves. Optional. The default is False.
             orderBy:        'startTime',
         }, 
         (err: any, res: any) => {

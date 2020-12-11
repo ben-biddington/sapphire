@@ -9,23 +9,20 @@ program.
   version('0.0.1').
   command("info [calendarId]").
   option("-v --verbose", "Enable verbose logging").
-  action(async (calendarId, cmd) => {
-    return listEvents({id: calendarId}).then(console.log);
-  });
+  action(async (calendarId) => 
+    listEvents({id: calendarId}).then(console.log));
 
 program.
   command("summary [calendarId]").
   option("-v --verbose", "Enable verbose logging").
-  action(async (calendarId, cmd) => {
-    return summary({id: calendarId}).then(console.log);
-  });
+  action(async (calendarId) => 
+    summary({id: calendarId}).then(console.log));
 
 program.
   command("event [calendarId] [eventId]").
   option("-v --verbose", "Enable verbose logging").
-  action(async (calendarId, eventId, cmd) => {
-    return singleEvent({ calendarId, eventId }).then(console.log);
-  });
+  action(async (calendarId, eventId, cmd) => 
+    singleEvent({ calendarId, eventId }).then(console.log));
 
 program.
   command("calendars").
