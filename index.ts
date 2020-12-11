@@ -1,6 +1,6 @@
 
 import * as fs          from 'fs'
-import { listEvents, summary }   from './internal/google-calendar'
+import { listEvents, summary, singleEvent }   from './internal/google-calendar'
 import { authorize }    from './internal/google-auth'
 import { Command }      from 'commander'
 //import * as chalk                 from 'chalk'
@@ -36,6 +36,21 @@ program.
         { tokenPath: '.conf/token.json', scopes: ['https://www.googleapis.com/auth/calendar.readonly'] }); 
 
     return summary(token, {id: calendarId}).then(console.log);
+  });
+
+program.
+  command("event [calendarId] [eventId]").
+  option("-v --verbose", "Enable verbose logging").
+  action(async (calendarId, eventId, cmd) => {
+    console.log(`Querying for calendar <${calendarId}>`);
+
+    const credential = JSON.parse(fs.readFileSync('.conf/credentials.json').toString());
+
+    const token = await authorize(
+        credential, 
+        { tokenPath: '.conf/token.json', scopes: ['https://www.googleapis.com/auth/calendar.readonly'] }); 
+
+    return singleEvent(token, { calendarId, eventId }).then(console.log);
   });
 
 program.parse(process.argv);
