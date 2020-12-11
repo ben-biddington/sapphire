@@ -1,5 +1,8 @@
 #!/bin/bash
 
-npx tsc -p .
+if [[ ! -z $BUILD ]]; then
+    echo -e "[tsc] Compiling...\n"
+    npx tsc -p .
+fi
 
 node dist/index.js "$@"

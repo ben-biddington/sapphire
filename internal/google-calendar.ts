@@ -3,52 +3,14 @@ import { OAuth2Client } from 'google-auth-library';
 import { authorize }    from './google-auth'
 import * as fs          from 'fs'
 
-export async function summary(opts: any = {}) {
-    const events = await listEvents(opts);
-
-    // [i] https://developers.google.com/calendar/v3/reference/events
-    return events.map((event:any) => ({
-        summary: event.summary,
-        creator: event.creator.email,
-        organizer: event.organizer.email,
-        colorId: event.colorId,
-        date: {
-            start: event.start.dateTime || event.start.date,
-            end: event.end.dateTime || event.end.date,
-        },
-        description: event.description
-    }));
-}
-
 // https://developers.google.com/calendar/quickstart/nodejs
 // https://developers.google.com/calendar/v3/reference/events/list
-export async function listEvents(opts: any = {}) : Promise<Array<any>> {
-    const { id, limit = 10 } = opts;
-    const calendar = await connect();
-
-    return new Promise((accept, reject) => {
-        calendar.events.list({
-            calendarId:     id,
-            timeMin:        (new Date()).toISOString(),
-            maxResults:     limit,
-            singleEvents:   true, // Whether to expand recurring events into instances and only return single one-off events and instances of recurring events, but not the underlying recurring events themselves. Optional. The default is False.
-            orderBy:        'startTime',
-        }, 
-        (err: any, res: any) => {
-            if (err) 
-                reject(err);
-            else
-                accept(res.data.items);
-        });
-    });
-}
-
-export async function listEventsByDateRange(opts: Options) : Promise<Array<any>> {
+export async function listEvents(opts: Options) : Promise<Array<any>> {
     const calendar = await connect();
 
     const dateRange: DateRange = opts.dateRange || new DateRange(new Date());
 
-    console.log(`from: <${dateRange.from}> to <${dateRange.to}>`);
+    console.log(`from: <${dateRange.from.toISOString()}> to <${dateRange.to}>`);
 
     return new Promise((accept, reject) => {
         calendar.events.list({
@@ -134,4 +96,5 @@ export class DateRange {
 export class Options {
     public calendarId: string = '';
     public dateRange?: DateRange;
+    public limit?:number = 10;
 }
