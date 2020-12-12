@@ -13,17 +13,17 @@ import { DateTime } from 'luxon'; // https://moment.github.io/luxon/docs/manual/
 const program = new Command();
 
 program.
-    command("events [calendarId]").
+    command("events [calendarIds...]").
     option("-d --days <days>"     , "The number of days to show events for").
     option("--from <date>"        , "The start date").
     option("--to <date>"          , "The end date").
     option("-v --verbose"         , "Verbose output").
     option("--dry"                , "Dry run").
-    action(async (calendarId, cmd) => {
+    action(async (calendarIds, cmd) => {
       
       const log = new ConsoleLog(cmd.verbose);
 
-      const opts: Options = { calendarId };
+      const opts: Options = { calendarIds };
 
       if (cmd.days) {
         opts.dateRange = new DateRange(new Date()).plusDays(parseInt(cmd.days));
@@ -43,7 +43,10 @@ program.
 
         events.forEach(event => {
           const day = DateTime.fromISO(event.start.date || event.start.dateTime);
-          console.log(`${chalk.bgGreen(day.toFormat('dd LLL yyyy ').padEnd(20))} ${event.summary}`);
+          console.log(
+            `${chalk.bgGreen(day.toFormat('dd LLL yyyy ').padEnd(20))} ` + 
+            `${chalk.bgHex(event.colors.backgroundColor).hex(event.colors.foregroundColor)(event.calendarName.padEnd(40))} ` + 
+            `${event.summary}`);
         });
 
       } else {

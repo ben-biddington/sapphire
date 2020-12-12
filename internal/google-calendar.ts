@@ -1,4 +1,4 @@
-import { google }       from 'googleapis';
+import { calendar_v3, google }       from 'googleapis';
 import { OAuth2Client } from 'google-auth-library';
 import { authorize }    from './google-auth';
 import * as fs          from 'fs';
@@ -14,10 +14,39 @@ export async function listEvents(ports: Ports, opts: Options) : Promise<Array<an
 
     const dateRange: DateRange = opts.dateRange || new DateRange(new Date());
 
+    log.info(`Calendars: <${opts.calendarIds.join(', ')}>`);
     log.info(`Date range: <${dateRange.from.toISOString()}> to <${dateRange.to?.toISOString() || 'none'}>`);
 
+    const calendars = await getCalendars(log, opts.calendarIds);
+    const calenderName = (calendarId: string) => { 
+        return calendars.filter(it => it.id === calendarId)[0].summary;
+    }
+    const calenderColors = (calendarId: string) => { 
+        const cal = calendars.filter(it => it.id === calendarId)[0];
+        return {
+            backgroundColor: cal.backgroundColor,
+            foregroundColor: cal.foregroundColor
+        }
+    }
+
+    log.debug(`Calendars: ${JSON.stringify(calendars, null, 2)}`);
+
+    return Promise.all(
+        opts.calendarIds.map(async calendarId => {
+            const temp = await eventsForCalendar(ports, calendar, calendarId, dateRange);
+            return temp.map((it:any) => {
+                return { 
+                    calendarName: calenderName(calendarId),
+                    colors: calenderColors(calendarId), 
+                    ...it}
+            });
+        })).
+        then(results => [].concat.apply([], results));
+}
+
+const eventsForCalendar = (ports: Ports, calendar: calendar_v3.Calendar, calendarId:string, dateRange: DateRange) : Promise<any> => {
     const queryOptions = {
-        calendarId:     opts.calendarId,
+        calendarId:     calendarId,
         timeMin:        dateRange.from.toISOString(),
         timeMax:        dateRange.to?.toISOString(),
         maxResults:     10,
@@ -25,7 +54,7 @@ export async function listEvents(ports: Ports, opts: Options) : Promise<Array<an
         orderBy:        'startTime',
     }
 
-    log.debug(`[google-calendar-api] ${JSON.stringify(queryOptions)}`);
+    ports.log.debug(`[google-calendar-api] ${JSON.stringify(queryOptions)}`);
 
     return new Promise((accept, reject) => {
         calendar.events.list(queryOptions, 
@@ -54,6 +83,26 @@ export async function singleEvent(opts: any = {}) : Promise<Array<any>> {
                 accept(res.data);
         });
     });
+}
+
+const getCalendars = async (log: Log, calendarIds: Array<string>) : Promise<Array<any>> => {
+    const calendar = await connect();
+    
+    log.debug(`Fetching calendars <${calendarIds.join(', ')}>`);
+
+    return Promise.all(calendarIds.map(calendarId => {
+        return new Promise((accept, reject) => {
+            calendar.calendarList.get({ calendarId }, 
+            (err: any, res: any) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    log.debug(`Fetched calendar <${res.data}>`);
+                    accept(res.data);
+                }
+            });
+        });
+    }));
 }
 
 export async function listCalendars() : Promise<Array<any>> {
@@ -102,7 +151,7 @@ export class DateRange {
 }
 
 export class Options {
-    public calendarId: string = '';
+    public calendarIds: Array<string> = [];
     public dateRange?: DateRange;
     public limit?:number = 10;
 }
