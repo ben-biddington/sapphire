@@ -1,26 +1,34 @@
 import { google }       from 'googleapis';
 import { OAuth2Client } from 'google-auth-library';
-import { authorize }    from './google-auth'
-import * as fs          from 'fs'
+import { authorize }    from './google-auth';
+import * as fs          from 'fs';
 
 // https://developers.google.com/calendar/quickstart/nodejs
 // https://developers.google.com/calendar/v3/reference/events/list
-export async function listEvents(opts: Options) : Promise<Array<any>> {
+export async function listEvents(ports: Ports, opts: Options) : Promise<Array<any>> {
+    const { log } = ports;
+
     const calendar = await connect();
+
+    log.debug(JSON.stringify(opts));
 
     const dateRange: DateRange = opts.dateRange || new DateRange(new Date());
 
-    console.log(`from: <${dateRange.from.toISOString()}> to <${dateRange.to}>`);
+    log.info(`Date range: <${dateRange.from.toISOString()}> to <${dateRange.to?.toISOString() || 'none'}>`);
+
+    const queryOptions = {
+        calendarId:     opts.calendarId,
+        timeMin:        dateRange.from.toISOString(),
+        timeMax:        dateRange.to?.toISOString(),
+        maxResults:     10,
+        singleEvents:   true, // Whether to expand recurring events into instances and only return single one-off events and instances of recurring events, but not the underlying recurring events themselves. Optional. The default is False.
+        orderBy:        'startTime',
+    }
+
+    log.debug(`[google-calendar-api] ${JSON.stringify(queryOptions)}`);
 
     return new Promise((accept, reject) => {
-        calendar.events.list({
-            calendarId:     opts.calendarId,
-            timeMin:        dateRange.from.toISOString(),
-            timeMax:        dateRange.to?.toISOString(),
-            maxResults:     10,
-            singleEvents:   true, // Whether to expand recurring events into instances and only return single one-off events and instances of recurring events, but not the underlying recurring events themselves. Optional. The default is False.
-            orderBy:        'startTime',
-        }, 
+        calendar.events.list(queryOptions, 
         (err: any, res: any) => {
             if (err) 
                 reject(err);
@@ -97,4 +105,35 @@ export class Options {
     public calendarId: string = '';
     public dateRange?: DateRange;
     public limit?:number = 10;
+}
+
+export interface Log {
+    info(message: string): void
+    debug(message: string): void
+}
+
+export class ConsoleLog implements Log {
+    private _verbose: boolean = false;
+
+    constructor(verbose: boolean = false) {
+        this._verbose = verbose;
+    }
+
+    info(message: string): void {
+        console.log(message);
+    }
+
+    debug(message: string): void {
+        if (this._verbose) {
+            console.log(`[dbg] ${message}`);
+        }
+    }
+}
+
+export class Ports {
+    public log: Log;
+
+    constructor(log: Log) {
+        this.log = log;
+    }
 }

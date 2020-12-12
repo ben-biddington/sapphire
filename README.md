@@ -1,3 +1,5 @@
+# Authorising
+
 1. Go [here](https://developers.google.com/calendar/quickstart/nodejs) and press `Enable the Google Calendar API` or create an application through `https://console.developers.google.com`.
 1. Save `credentials.json` at `.conf`
 1. Run `$ ./run events [calendar-id]`, for example `$ ./run events your.name@gmail.com`
@@ -38,4 +40,10 @@ BUILD=1 ./run
 
 ```
 ./run events gggabcdef@group.calendar.google.com -d 21
+```
+
+## List Events for a date range
+
+```
+./run events gggabcdef@group.calendar.google.com --from 19-Nov-2020
 ```
