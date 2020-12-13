@@ -17,6 +17,7 @@ program.
     option("-d --days <days>"     , "The number of days to show events for").
     option("--from <date>"        , "The start date").
     option("--to <date>"          , "The end date").
+    option("-f --format <value>"  , "Output format", "text").
     option("-v --verbose"         , "Verbose output").
     option("--dry"                , "Dry run").
     option("--group"              , "Group by calendar rather than sort by date").
@@ -36,6 +37,7 @@ program.
 
       log.debug(`command line args: days=<${cmd.days}>, from=<${cmd.from}>, to=<${cmd.to}>`);
       log.debug(`opts: ${JSON.stringify(opts)}`);
+      log.debug(`Format = <${cmd.format}> <${cmd.format === 'text'}>`);
 
       if (! cmd.dry) {
 
@@ -43,13 +45,17 @@ program.
 
         log.debug(JSON.stringify(events, null, 2));
 
-        events.forEach(event => {
-          const day = DateTime.fromISO(event.start.date || event.start.dateTime);
-          console.log(
-            `${chalk.bgHex(event.colors.backgroundColor).hex(event.colors.foregroundColor)(event.calendarName.padEnd(40))} ` + 
-            `${chalk.bgGreen(day.toFormat('dd LLL yyyy ').padEnd(20))} ` + 
-            `${event.summary}`);
-        });
+        if (cmd.format === 'text') {
+          events.forEach(event => {
+            const day = DateTime.fromISO(event.start.date || event.start.dateTime);
+            console.log(
+              `${chalk.bgHex(event.colors.backgroundColor).hex(event.colors.foregroundColor)(event.calendarName.padEnd(40))} ` + 
+              `${chalk.bgGreen(day.toFormat('dd LLL yyyy ').padEnd(20))} ` + 
+              `${event.summary}`);
+          });
+        } else {
+          console.log(JSON.stringify(events, null, 2));
+        }
 
       } else {
         log.info(`Dry run is on, exiting`);
