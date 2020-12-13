@@ -9,7 +9,8 @@ import {
 }                   from './internal/google-calendar'
 import { Command }  from 'commander'
 import * as chalk   from 'chalk'
-import { DateTime } from 'luxon'; // https://moment.github.io/luxon/docs/manual/formatting.html
+import { TextCalendarView } from './internal/view/text-calendar-view';
+
 const program = new Command();
 
 program.
@@ -46,13 +47,7 @@ program.
         log.debug(JSON.stringify(events, null, 2));
 
         if (cmd.format === 'text') {
-          events.forEach(event => {
-            const day = DateTime.fromISO(event.start.date || event.start.dateTime);
-            console.log(
-              `${chalk.bgHex(event.colors.backgroundColor).hex(event.colors.foregroundColor)(event.calendarName.padEnd(40))} ` + 
-              `${chalk.bgGreen(day.toFormat('dd LLL yyyy ').padEnd(20))} ` + 
-              `${event.summary}`);
-          });
+          new TextCalendarView().show(events);
         } else {
           console.log(JSON.stringify(events, null, 2));
         }
