@@ -59,3 +59,9 @@ BUILD=1 ./run events new_zealand__en@holiday.calendar.google.com
 ```
 BUILD=1 ./run events ggg0ovp5u7co8s0oav9401v0ko@group.calendar.google.com ben.biddington@gmail.com new_zealand__en@holiday.calendar.google.com --to 1-Apr-2021
 ```
+
+## Print in table layout
+
+```
+./run events gggabcdef@group.calendar.google.com --from 19-Nov-2020 -f table
+```

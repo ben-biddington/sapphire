@@ -10,6 +10,7 @@ import {
 import { Command }  from 'commander'
 import * as chalk   from 'chalk'
 import { TextCalendarView } from './internal/view/text-calendar-view';
+import { TableCalendarView } from './internal/view/table-calendar-view';
 
 const program = new Command();
 
@@ -48,6 +49,9 @@ program.
 
         if (cmd.format === 'text') {
           new TextCalendarView().show(events);
+        }
+        else if (cmd.format === 'table') {
+          new TableCalendarView().show(events);
         } else {
           console.log(JSON.stringify(events, null, 2));
         }

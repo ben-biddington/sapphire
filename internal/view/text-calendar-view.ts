@@ -1,6 +1,4 @@
 import { CalendarView } from "./calendar-view";
-
-//import { CalendarView } from './calendar-view';
 import * as chalk   from 'chalk'
 import { DateTime } from 'luxon';
 
