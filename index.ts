@@ -1,4 +1,3 @@
-
 import { 
   listEvents, 
   listCalendars, 
@@ -22,7 +21,7 @@ program.
     option("-f --format <value>"  , "Output format", "text").
     option("-v --verbose"         , "Verbose output").
     option("--dry"                , "Dry run").
-    option("--group"              , "Group by calendar rather than sort by date").
+    option("-g --group"           , "Group by calendar rather than sort by date").
     action(async (calendarIds, cmd) => {
       
       const log = new ConsoleLog(cmd.verbose);
