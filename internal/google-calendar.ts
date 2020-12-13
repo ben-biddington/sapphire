@@ -2,6 +2,7 @@ import { calendar_v3, google }       from 'googleapis';
 import { OAuth2Client } from 'google-auth-library';
 import { authorize }    from './google-auth';
 import * as fs          from 'fs';
+import { DateTime }     from 'luxon';
 
 // https://developers.google.com/calendar/quickstart/nodejs
 // https://developers.google.com/calendar/v3/reference/events/list
@@ -15,7 +16,10 @@ export async function listEvents(ports: Ports, opts: Options) : Promise<Array<an
     const dateRange: DateRange = opts.dateRange || new DateRange(new Date());
 
     log.info(`Calendars: <${opts.calendarIds.join(', ')}>`);
+    
     log.info(`Date range: <${dateRange.from.toISOString()}> to <${dateRange.to?.toISOString() || 'none'}>`);
+
+    log.info('\n');
 
     const calendars = await getCalendars(log, opts.calendarIds);
     const calenderName = (calendarId: string) => { 
@@ -41,14 +45,25 @@ export async function listEvents(ports: Ports, opts: Options) : Promise<Array<an
                     ...it}
             });
         })).
-        then(results => [].concat.apply([], results));
+        then(results => [].concat.apply([], results)).then(results => {
+            const byDate = (a:any, b:any) => {
+                const dateA:DateTime = DateTime.fromISO(a.start.date || a.start.dateTime);
+                const dateB:DateTime = DateTime.fromISO(b.start.date || b.start.dateTime);
+                return dateA.diff(dateB).milliseconds;
+              }
+
+            if (opts.sort)
+                return results.sort(byDate);
+
+            return results;
+        });
 }
 
-const eventsForCalendar = (ports: Ports, calendar: calendar_v3.Calendar, calendarId:string, dateRange: DateRange) : Promise<any> => {
+const eventsForCalendar = (ports: Ports, calendar: calendar_v3.Calendar, calendarId:string, dateRange: DateRange | null) : Promise<any> => {
     const queryOptions = {
         calendarId:     calendarId,
-        timeMin:        dateRange.from.toISOString(),
-        timeMax:        dateRange.to?.toISOString(),
+        timeMin:        dateRange?.from.toISOString(),
+        timeMax:        dateRange?.to?.toISOString(),
         maxResults:     10,
         singleEvents:   true, // Whether to expand recurring events into instances and only return single one-off events and instances of recurring events, but not the underlying recurring events themselves. Optional. The default is False.
         orderBy:        'startTime',
@@ -154,6 +169,7 @@ export class Options {
     public calendarIds: Array<string> = [];
     public dateRange?: DateRange;
     public limit?:number = 10;
+    public sort:boolean = true;
 }
 
 export interface Log {

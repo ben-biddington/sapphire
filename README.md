@@ -24,10 +24,16 @@ You can safely ignore the `This app isn't verified` error.
 
 ## Force build
 
-By default build is **off** to speed things up.
+By default build is **off** to speed things up, trigger build by setting the `BUILD` environment variable to any value:
 
 ```
-BUILD=1 ./run
+BUILD=1 ./run events new_zealand__en@holiday.calendar.google.com
+```
+
+## List all calendars
+
+```
+./run calendars
 ```
 
 ## List the next 10 events in calendar
@@ -46,4 +52,10 @@ BUILD=1 ./run
 
 ```
 ./run events gggabcdef@group.calendar.google.com --from 19-Nov-2020
+```
+
+## List events from multiple calendars
+
+```
+BUILD=1 ./run events ggg0ovp5u7co8s0oav9401v0ko@group.calendar.google.com ben.biddington@gmail.com new_zealand__en@holiday.calendar.google.com --to 1-Apr-2021
 ```

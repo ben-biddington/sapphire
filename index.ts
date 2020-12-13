@@ -19,11 +19,12 @@ program.
     option("--to <date>"          , "The end date").
     option("-v --verbose"         , "Verbose output").
     option("--dry"                , "Dry run").
+    option("--group"              , "Group by calendar rather than sort by date").
     action(async (calendarIds, cmd) => {
       
       const log = new ConsoleLog(cmd.verbose);
 
-      const opts: Options = { calendarIds };
+      const opts: Options = { calendarIds, sort: !cmd.group };
 
       if (cmd.days) {
         opts.dateRange = new DateRange(new Date()).plusDays(parseInt(cmd.days));
@@ -37,15 +38,16 @@ program.
       log.debug(`opts: ${JSON.stringify(opts)}`);
 
       if (! cmd.dry) {
-        const events = await listEvents(new Ports(log), opts);
+
+        const events = (await listEvents(new Ports(log), opts));
 
         log.debug(JSON.stringify(events, null, 2));
 
         events.forEach(event => {
           const day = DateTime.fromISO(event.start.date || event.start.dateTime);
           console.log(
-            `${chalk.bgGreen(day.toFormat('dd LLL yyyy ').padEnd(20))} ` + 
             `${chalk.bgHex(event.colors.backgroundColor).hex(event.colors.foregroundColor)(event.calendarName.padEnd(40))} ` + 
+            `${chalk.bgGreen(day.toFormat('dd LLL yyyy ').padEnd(20))} ` + 
             `${event.summary}`);
         });
 
